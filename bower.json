@@ -1,6 +1,7 @@
 {
   "name": "sensors-history",
   "version": "0.8.0",
+  "main": "sensors-history.html",
   "homepage": "https://github.com/partnering/sensors-history",
   "authors": [
     "Sylvain Mahe <sylv.mahe@gmail.com>"
