@@ -1,0 +1,21 @@
+{
+  "name": "sensors-history",
+  "version": "0.8.0",
+  "homepage": "https://github.com/partnering/sensors-history",
+  "authors": [
+    "Sylvain Mahe <sylv.mahe@gmail.com>"
+  ],
+  "description": "Polymer WebComponent for displaying DiyaOne sensors history",
+  "license": "LGPL v3.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.5",
+    "diya-sdk": "partnering/diya-sdk"
+  }
+}
