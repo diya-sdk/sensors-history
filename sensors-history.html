@@ -276,8 +276,7 @@
 		        sensors: this.sensors
 					}
 					console.log("Linechart : "+JSON.stringify(dataConfig));
-					d1(this.selector).IEQ().updateData(function(ieq) {
-						var model = ieq.getDataModel();
+					d1(this.selector).IEQ().updateData(function(model) {
 						if(model)
 						{
 							var dispModel = {};
