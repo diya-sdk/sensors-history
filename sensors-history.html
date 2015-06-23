@@ -3,7 +3,7 @@
 <script type="text/javascript" src="../d3/d3.min.js"></script>
 
 
-<polymer-element name="sensors-history" attributes="width height period selector sensors">
+<polymer-element name="sensors-history" attributes="width height period xReversed selector sensors">
 	<template>
 		<style>
 			:host {
@@ -104,8 +104,8 @@
 				.interpolate('basis');
 
 			/** render display */
-			that.render = function(model) {
-				if (!model || !model.time || model.time.length == 0 ) return;
+			that.render = function(model,trange) {
+				if (!model) return;
 
 				//~ console.log(JSON.stringify(model));
 
@@ -118,18 +118,23 @@
 						name: name,
 						label: model[name].label,
 						unit: model[name].unit,
-						values: model[name].data.map(function(d,i) {
-							return {t: model.time[i], val: d};
+						trange: d3.extent(model[name].time),
+						values: model[name].vals.map(function(d,i) {
+							return {t: model[name].time[i], val: d};
 						})
 					};
 				});
 
 
-				/* [OPTION] reversed because we want to display from present to past */
+				/* [OPTION] reversed because we want to display from present to past */		
+			if(!trange)
+				console.log("ERROR - TRANGE UNDEFINED");
+
+
 				if(xReversed)
-					x.domain(d3.extent(model.time).reverse());
+					x.domain(trange.reverse());
 				else
-					x.domain(d3.extent(model.time));
+					x.domain(trange);
 
 				/** extract scale for each data */
 				for(var i in model) {
@@ -239,10 +244,11 @@
 				this.width =  this.width || 600;
 				this.height = this.height || 400;
 				this.period = this.period || 10000; //10 s
-				this.xReversed = this.xReversed || 400;
+				this.xReversed = this.xReversed  || false;
 				this.selector = this.selector || null;
 				this.sensors = this.sensors || null;
-
+		
+		console.log("xRev: "+this.xReversed);
 				/* create/init d3 chart */
 				this.chart = linesChart(this.$.chart, this.width, this.height, this.xReversed);
 
@@ -263,32 +269,38 @@
 
 					/* request for data from ieq service */
 					tend = new Date().getTime();
-					tdeb = tend-10*60*1000; // 5 min
+					tbeg = tend-10*60*1000; // 5 min
 					var dataConfig = {
-						sampling: 100,
+						sampling: null,
 						operator: "last",
 						criteria: {
 							time: {
-								deb: tdeb,
+								beg: tbeg,
 								end: tend
 							}
 						},
-		        sensors: this.sensors
+						sensors: ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
 					}
 					console.log("Linechart : "+JSON.stringify(dataConfig));
 					d1(this.selector).IEQ().updateData(function(model) {
+						//console.log(JSON.stringify(model));
 						if(model)
 						{
 							var dispModel = {};
+							var now = new Date();
 							for (m in model) {
-								if(m === 'time') { /** extract relative time */
-									var now = new Date();
-									dispModel.time = model.time.data.map(function(t,i) { return now-t;});
+								dispModel[m]={};
+								if (m !== 'placeId' && m!== 'robotId') {
+									/** extract relative time */
+									dispModel[m].time = model[m].time.map(function(t,i) { return now-t;});
+									dispModel[m].vals = model[m].data;
+									dispModel[m].range = model[m].range;
+									dispModel[m].unit = model[m].unit;
+									dispModel[m].label = model[m].label;
+		
 								}
-								else if (m != 'placeId' && m!== 'robotId')
-									dispModel[m] = model[m];
 							}
-							that.chart.render(dispModel);
+							that.chart.render(dispModel, [now-tbeg, now-tend]);
 						}
 					}, dataConfig);
 				}
