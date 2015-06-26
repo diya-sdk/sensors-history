@@ -3,40 +3,45 @@
 <script type="text/javascript" src="../d3/d3.min.js"></script>
 
 
-<polymer-element name="sensors-history" attributes="width height period selector sensors relTime">
-  <template>
+<polymer-element name="sensors-history" attributes="period selector sensors relTime">
+	<template>
 	<style>
-	  :host {
-		  display: flex;
-		  flex-direction: horizontal;
-		  justify-content: center;
-		  width: 100vw;
-	  }
-	  .axis path,
-	  .axis line {
-		  fill: none;
-		  stroke: #000;
-		  shape-rendering: crispEdges;
-		  stroke-width: 3px;
-	  }
-	  .line {
-		  fill: none;
-		  stroke: steelblue;
-		  stroke-width: 3px;
-	  }
-	  text {
-		  font-size: 18px;
-		  font-weight: bold;
-	  }
+		:host {
+			display: flex;
+			flex-direction: horizontal;
+			justify-content: center;
+			/*width: 100vw;*/
+		}
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+			stroke-width: 3px;
+		}
+		.line {
+			fill: none;
+			stroke: steelblue;
+			stroke-width: 3px;
+		}
+		text {
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
 	</style>
-	
-	<span class="chart">
-	  <svg id="chart" width="{{width}}" height="{{height}}"></svg>
-	</span>
-	
-  </template>
-  
-  <script>
+
+	<!-- <span class="chart"> -->
+		<svg id="chart" viewBox="0 0 {{viewBoxWidth}} {{viewBoxHeight}}" preserveAspectRatio="xMinYMin meet"></svg>
+	<!-- </span> -->
+
+	</template>
+
+	<script>
 	function linesChart(element, width, height,_relTime) {
 		var data = [];
 		var that = {};
@@ -53,12 +58,12 @@
 		w = width - margin.left - 2*margin.right - margin.legendWidth,
 		x, y, yArray={};
 		that.relTime = _relTime;
-		
+
 		var xLegend = width - margin.legendWidth - margin.right - margin.left;
 		var wLegend = margin.legendWidth;
 		var yLegend = margin.legendTopMargin;
 		var dyLegend = margin.dyLegend;
-		
+
 		var relTimeFormat = d3.time.format.multi([
 			[".%L", function(d) { return d.getUTCMilliseconds(); }],
 			[":%S", function(d) { return d.getUTCSeconds(); }],
@@ -73,32 +78,32 @@
 			["%H:00:00 ", function(d) { return d.getHours(); }],
 			["%x ", function(d) { return true }]
 		]);
-		
-		
+
+
 		/* create svg. Should define dimensions too */
 		var svg = d3.select(element)
 		//~ .attr("width", width + margin.left + margin.right)
 		//~ .attr("height", height + margin.top + margin.bottom)
 			.append('g')
 			.attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-		
+
 		// default attr for axis
 		svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + h + ")");
 		svg.append("g")
 			.attr("class", "y axis");
-		
+
 		// create legend box
 		svg.append("g")
 			.attr("class", "legend")
 			.attr("transform", "translate(" + xLegend + ", " + yLegend + ")");
-		
-		
-		
+
+
+
 		/* definition couleurs - 10 categories de couleurs differentes */
 		var color = d3.scale.category10();
-		
+
 		/* default graphical binding for chart axis */
 		// x = d3.scale.linear().range([0, w]);
 		// x = d3.time.scale.utc().range([0, w]); /* display scale UTC */
@@ -106,21 +111,21 @@
 
 		//~ /* fonction pour parsing des date - choix format d'affichage des dates */
 		var timeFormat = d3.time.format("%H:%M:%S");
-		
+
 		/* line generator */
 		that.line = d3.svg.line()
 			.x(function(d) { return x(d.t); })
 			.interpolate('basis');
-		
+
 		/** render display */
 		that.render = function(model,trange) {
 			if (!model) return;
-			
+
 			//~ console.log(JSON.stringify(model));
-			
+
 			/* define association between keys and colors */
 			color.domain(d3.keys(model).filter(function(name) { return name !== "time"; }));
-			
+
 			/* renvoie nom, values */
 			var sensorData = color.domain().map(function(name) {
 				return {
@@ -133,13 +138,13 @@
 					})
 				};
 			});
-			
-			
-			/* [OPTION] reversed because we want to display from present to past */		
+
+
+			/* [OPTION] reversed because we want to display from present to past */
 			if(!trange)
 				console.log("ERROR - TRANGE UNDEFINED");
-			
-			
+
+
 			if(false) {
 				x.domain(trange.reverse());
 				console.log("reverse");
@@ -148,32 +153,32 @@
 				x.domain(trange);
 				console.log("notReverse");
 			}
-			
+
 			/** extract scale for each data */
 			for(var i in model) {
 				if(i != 'time') {
 					yArray[i]=d3.scale.linear().range([h, 0]).domain(model[i].range);
 				}
 			}
-			
+
 			xAxis = d3.svg.axis()
 				.scale(x)
 				.orient("bottom");
-			
+
 			/* set specific format for rel time */
 			if(this.relTime)
 				xAxis.tickFormat(relTimeFormat)
 			else
 				xAxis.tickFormat(absTimeFormat);
-			
+
 			this.updateLegend(sensorData);
 			this.updateLines(sensorData);
 			this.updateAxis();
 		};
-		
+
 		that.updateLegend = function(data) {
 			var that=this;
-			
+
 			var sensorLegend = svg.select(".legend").selectAll(".sensorLegend")
 				.data(data);
 			sensorLegend.exit()
@@ -198,15 +203,15 @@
 				.style("text-anchor","end")
 				.text(function(d) {
 					return (typeof d.value.val != 'undefined' ? d.value.val.toFixed(1)+" "+d.unit : ""); }); /* text */
-			
+
 		}
-		
+
 		that.updateLines = function(data) {
 			var that=this;
-			
+
 			var sensorData = svg.selectAll(".sensorData") /* get all info with class city in DOM */
 				.data(data); /* join new data cities to previous one */
-			
+
 			/* Update line and text for preexisting elements */
 			sensorData.select(".line") /* there should be only one path with class line */
 				.attr("d", function(d) {
@@ -221,7 +226,7 @@
 			//~ return d.name+" - "+ d.value.val.toFixed(1); }); /* text */
 			sensorData.exit()
 				.remove();
-			sensorData = sensorData.enter().append("g") /* on added data,  add to g element of svg (i.e. graphical elements of svg) */
+			sensorData = sensorData.enter().append("g") /* on added data,	add to g element of svg (i.e. graphical elements of svg) */
 				.attr("class", "sensorData"); /* and define class 'sensorData' */
 			/* add line and text */
 			sensorData.append("path")
@@ -233,7 +238,7 @@
 					return that.line(d.values); }) /* 'd' instructions to draw line in svg. generated from the 'line' wrapper */
 				.style("stroke", function(d) { return color(d.name); }); /* define color according to colormap (10) */
 			//~ sensorData.append("text")
-			//~ .datum(function(d) { return {name: d.name, value: d.values[d.values.length-1]}; })  /* define how to get data (d in transform function) */
+			//~ .datum(function(d) { return {name: d.name, value: d.values[d.values.length-1]}; })	/* define how to get data (d in transform function) */
 			//~ .attr("transform", function(d) { return "translate(" + x(d.value.t) + "," + yArray[d.name](d.value.val) + ")"; }) /* x and y are wrapper to compute coordinates in frame according to values */
 			//~ .attr("class", "text")
 			//~ .attr("x", 5) /* position and dim of text area */
@@ -242,58 +247,65 @@
 			//~ .text(function(d) {
 			//~ return d.name+" - "+ d.value.val.toFixed(1); }); /* text */
 		};
-		
+
 		that.updateAxis = function() {
 			svg.selectAll("g.x.axis")
 				.call(xAxis) // rotate xAxis ticks
-				.selectAll("text")  
+				.selectAll("text")
 				.style("text-anchor", "end")
 				.attr("dx", "-.8em")
 				.attr("dy", ".15em")
 				.attr("transform", function(d) {
-					return "rotate(-65)" 
+					return "rotate(-65)"
 				});
 		};
-		
+
 		that.clean = function () {
 			svg.selectAll("*").remove();
 		};
-		
+
 		return that;
 	};
-	
-	
+
+
 	Polymer({
+		viewBoxWidth: 1024,
+		viewBoxHeight: 768,
+
 		ready: function(){
-			var that=this;
-			this.width =  this.width || 600;
-			this.height = this.height || 400;
 			this.period = this.period || 10000; //10 s
 			this.selector = this.selector || null;
-			this.sensors = (this.sensors ? JSON.parse(this.sensors) : null);
+			// this.sensors = (this.sensors ? JSON.parse(this.sensors) : null);
 			if (typeof this.place === "string")
 				this.place = JSON.parse(this.place); // RQ: convert into object here ? Is it possible to exchange data directly after init by JSON ?
 			this.robot = this.robot || null;
 			this.time = this.time || null; // format {beg: xxx, end: x};
-			
+
 			this.relTime = this.relTime || false;
-			
+
 			console.log("xRev: "+this.relTime);
 			/* create/init d3 chart */
-			this.chart = linesChart(this.$.chart, this.width, this.height, this.relTime);
-			
-			setTimeout(function() {that.autorefresh();}, this.period);
+			this.chart = linesChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight, this.relTime);
 		},
-		autorefresh: function() {
-			var that = this;
-			this.updateChart();
-			setTimeout(function() {that.autorefresh();}, this.period);
+
+		selectorChanged: function() {
+			// autorefresh?
+			if (this.period != null) {
+				var that=this;
+				if (this.interval) {
+					clearInterval(this.interval);
+				}
+				this.interval = setInterval(function() { that.updateChart(null); }, this.period);
+			}
 		},
+
 		/**
 		 *		Update chart
 		 */
 		updateChart: function () {
 			//~ console.log(JSON.stringify(model));
+			var sensors = this.sensors.split(',');
+
 			if(this.selector) {
 				var that=this;
 				console.log("time : "+JSON.stringify(this.time));
@@ -316,13 +328,21 @@
 						place: this.place,
 						robot: JSON.parse(this.robot)
 					},
-					sensors: this.sensors //['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
+					sensors: sensors //['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
 				};
 				console.log("Linechart : "+JSON.stringify(dataConfig));
 				d1(this.selector).IEQ().updateData(function(model) {
 					//console.log(JSON.stringify(model));
 					if(model)
 					{
+						// bug in Ieq.js, when multiple IEQ instances request db, this.sendModel will be corrupted, might contains more or less sensors data than requested
+						// so we do the filter in this code till this bug is fixed
+						for (var sensor in model) {
+							if (!~sensors.indexOf(sensor)) {
+								delete model[sensor];
+							}
+						}
+
 						var dispModel = {};
 						for (m in model) {
 							dispModel[m]={};
@@ -343,14 +363,17 @@
 						console.log(""+tnow);
 						console.log(" beg: "+(that.time.end-that.time.beg)+" end "+(that.time.end-that.time.end));
 						var trange = (that.relTime ? [that.time.end-that.time.beg, 0] : [that.time.beg, that.time.end]);
-						that.chart.render(dispModel, trange);
+
+						if (that.chart != null) {
+							that.chart.render(dispModel, trange);
+						}
 					}
 				}, dataConfig);
-			} 
+			}
 			else
 				console.log("Selector undefined");
 		}
 	});
-  </script>
-  
+	</script>
+
 </polymer-element>
