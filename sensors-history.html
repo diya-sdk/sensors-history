@@ -48,18 +48,18 @@
 		var margin = {
 			top: 10,
 			right: 20,
-			bottom: 100,
+			bottom: 60,
 			left: 20,
 			legendWidth: 250,
 			legendTopMargin: 150,
 			dyLegend: 30
 		};
 		var h = height - margin.top - margin.bottom,
-		w = width - margin.left - 2*margin.right - margin.legendWidth,
+		w = width - margin.left - margin.right,
 		x, y, yArray={};
 		that.relTime = _relTime;
 
-		var xLegend = width - margin.legendWidth - margin.right - margin.left;
+		var xLegend = width / 2 - margin.legendWidth - margin.right - margin.left;
 		var wLegend = margin.legendWidth;
 		var yLegend = margin.legendTopMargin;
 		var dyLegend = margin.dyLegend;
@@ -151,7 +151,7 @@
 			}
 			else {
 				x.domain(trange);
-				console.log("notReverse");
+				//console.log("notReverse");
 			}
 
 			/** extract scale for each data */
@@ -185,18 +185,22 @@
 				.remove();
 			var gSensorLegend = sensorLegend.enter().append("g")
 				.attr("class", "sensorLegend");
+
 			gSensorLegend.append("text")
 				.attr("class", "sensorName")
 				.attr("dy", ".35em")
 				.style("fill", function(d) { return color(d.name); })
+
 			gSensorLegend.append("text")
 				.attr("class", "sensorValue")
 				.attr("dy", ".35em")
 				.style("fill", function(d) { return color(d.name); })
+
 			svg.selectAll(".sensorLegend").select(".sensorName")
 				.datum(function(d) { return {name: d.name, label: d.label }})
 				.attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*dyLegend) + ")"; })
 				.text(function(d) { return d.label; }); /* text */
+
 			svg.selectAll(".sensorLegend").select(".sensorValue")
 				.datum(function(d) { return {name: d.name, unit: d.unit, value: d.values[0]}; }) // select most recent element
 				.attr("transform", function(d, i) { return "translate(" + wLegend + "," + (i*dyLegend) + ")"; })
@@ -283,7 +287,7 @@
 
 			this.relTime = this.relTime || false;
 
-			console.log("xRev: "+this.relTime);
+			//console.log("xRev: "+this.relTime);
 			/* create/init d3 chart */
 			this.chart = linesChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight, this.relTime);
 		},
@@ -308,11 +312,11 @@
 
 			if(this.selector) {
 				var that=this;
-				console.log("time : "+JSON.stringify(this.time));
+				//console.log("time : "+JSON.stringify(this.time));
 
 				/** Define trange **/
 				var tnow = new Date().getTime();
-				console.log(""+tnow);
+				//console.log(""+tnow);
 				this.time = {
 					beg: tnow-1*60*1000, // 10 h
 					end: tnow
@@ -330,7 +334,7 @@
 					},
 					sensors: sensors //['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
 				};
-				console.log("Linechart : "+JSON.stringify(dataConfig));
+				//console.log("Linechart : "+JSON.stringify(dataConfig));
 				d1(this.selector).IEQ().updateData(function(model) {
 					//console.log(JSON.stringify(model));
 					if(model)
@@ -360,8 +364,8 @@
 								dispModel[m].label = model[m].label;
 							}
 						}
-						console.log(""+tnow);
-						console.log(" beg: "+(that.time.end-that.time.beg)+" end "+(that.time.end-that.time.end));
+						//console.log(""+tnow);
+						//console.log(" beg: "+(that.time.end-that.time.beg)+" end "+(that.time.end-that.time.end));
 						var trange = (that.relTime ? [that.time.end-that.time.beg, 0] : [that.time.beg, that.time.end]);
 
 						if (that.chart != null) {
