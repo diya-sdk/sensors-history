@@ -210,7 +210,7 @@
 				.text(function(d) { return d.label; }); /* text */
 
 			svg.selectAll(".sensorLegend").select(".sensorValue")
-				.datum(function(d) { return {name: d.name, unit: d.unit, value: d.values[0]}; }) // select most recent element
+				.datum(function(d) { return {name: d.name, unit: d.unit, value: d.values[d.values.length-1]}; }) // select most recent element - forward display
 				.attr("transform", function(d, i) { return "translate(" + wLegend + "," + (i*dyLegend) + ")"; })
 				.style("text-anchor","end")
 				.text(function(d) {
