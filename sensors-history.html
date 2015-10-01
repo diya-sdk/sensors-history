@@ -3,7 +3,7 @@
 <script type="text/javascript" src="../d3/d3.min.js"></script>
 
 
-<polymer-element name="sensors-history" attributes="period selector sensors relTime timeBeg timeEnd timeRange sampling">
+<polymer-element name="sensors-history" attributes="period selector sensors relTime timeBeg timeEnd timeRange sampling operators">
 	<template>
 	<style>
 		:host {
@@ -295,6 +295,7 @@
 			this.timeEnd = new Date(this.timeEnd).getTime() || null;
 			this.timeRange = this.timeRange || null;
 			this.sampling = this.sampling || null;
+			this.operator = this.operators || "last";
 			this.time = {
 				beg: this.timeBeg,
 				end: this.timeEnd,
@@ -333,7 +334,7 @@
 				/* request for data from ieq service */
 				var dataConfig = {
 					sampling: this.sampling,
-					operator: "last",
+					operator: this.operator,
 					criteria: {
 						time: this.time,
 						place: this.place,
