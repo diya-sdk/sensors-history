@@ -13,14 +13,14 @@
 		}
 		.axis path,
 		.axis line {
-			fill: none;
 			stroke: #000;
+			fill: none;
 			shape-rendering: crispEdges;
 			stroke-width: 3px;
 		}
 		.line {
-			fill: none;
 			stroke: steelblue;
+			fill: none;
 			stroke-width: 3px;
 		}
 		text {
@@ -36,7 +36,7 @@
   <template>
 
 	<!-- <span class="chart"> -->
-		<svg id="chart" viewBox="{{_computeViewBox(viewBoxHeight, viewBoxWidth)}}" preserveAspectRatio="xMinYMin meet"></svg>
+		<svg id="chart" viewBox$="{{_computeViewBox(height, width)}}" preserveAspectRatio$="xMinYMin meet"></svg>
 	<!-- </span> -->
 
 	</template>
@@ -48,10 +48,10 @@
 		var margin = {
 			top: 10,
 			right: 20,
-			bottom: 60,
+			bottom: 80,
 			left: 22,
 			legendWidth: 250,
-			legendTopMargin: 80,
+			legendTopMargin: 20,
 			dyLegend: 30
 		};
 		var h = height - margin.top - margin.bottom, w = width - margin.left - margin.right, x, y, yArray = {};
@@ -273,7 +273,7 @@
 				return that.line(d.values);
 			}).style('stroke', function (d) {
 				return color(d.name);
-			});
+			}).style('fill', 'none');
 		};
 		/* define color according to colormap (10) */
 		//~ sensorData.append("text")
@@ -311,13 +311,15 @@
 		  timeBeg: { notify: true },
 		  timeEnd: { notify: true },
 		  timeRange: { notify: true },
-		  viewBoxHeight: {
+		  height: {
 			  type: Number,
-			  value: 480
+			  value: 480,
+			  notify: true
 		  },
-		  viewBoxWidth: {
+		  width: {
 			  type: Number,
-			  value: 640
+			  value: 640,
+			  notify: true
 		  }
 	  },
 	  ready: function () {
@@ -342,7 +344,7 @@
 		  this.relTime = this.relTime || false;
 		  //console.log("xRev: "+this.relTime);
 		  /* create/init d3 chart */
-		  this.chart = linesChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight, this.relTime);
+		  this.chart = linesChart(this.$.chart, this.width, this.height, this.relTime);
 	  },
 	  selectorChanged: function () {
 		  // autorefresh?
@@ -360,7 +362,6 @@
 	   *		Update chart
 	   */
 	  updateChart: function () {
-		  //~ console.log(JSON.stringify(model));
 		  var sensors = this.sensors.split(',');
 		  if (this.selector) {
 			  var that = this;
@@ -421,11 +422,10 @@
 					  }
 				  }
 			  }, dataConfig);
-		  } else
-			  console.log('Selector undefined');
+		  }
 	  },
-	  _computeViewBox: function (viewBoxHeight, viewBoxWidth) {
-		  return '0 0 ' + viewBoxWidth + ' ' + viewBoxHeight;
+	  _computeViewBox: function (height, width) {
+		  return '0 0 ' + width + ' ' + height;
 	  }
   });
 </script>
