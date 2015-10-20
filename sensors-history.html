@@ -24,7 +24,7 @@
 			stroke-width: 3px;
 		}
 		text {
-			font-size: 18px;
+			font-size: 1.7em;
 			font-weight: bold;
 		}
 
@@ -36,21 +36,22 @@
   <template>
 
 	<!-- <span class="chart"> -->
-		<svg id="chart" viewBox$="{{_computeViewBox(height, width)}}" preserveAspectRatio$="xMinYMin meet"></svg>
+		<svg id="chart" viewBox$="{{_computeViewBox(height, width)}}" preserveAspectRatio$="xMinYMin meet" style$="{{_computeStyle(height,width)}}"></svg>
 	<!-- </span> -->
 
 	</template>
 </dom-module>
 <script>
-	function linesChart(element, width, height, _relTime) {
+	function linesChart(element, width, height, _relTime, colorShift) {
 		var data = [];
 		var that = {};
+		/** TODO SET MARGINS PROPORTIONAL TO SIZE **/
 		var margin = {
-			top: 10,
-			right: 20,
-			bottom: 80,
-			left: 22,
-			legendWidth: 250,
+			top: 10, // 10
+			right: 20, // 20
+			bottom: 80, // 80
+			left: 22, // 22
+			legendWidth: 250, // 250
 			legendTopMargin: 20,
 			dyLegend: 30
 		};
@@ -131,8 +132,26 @@
 		svg.append('g').attr('class', 'y axis');
 		// create legend box
 		svg.append('g').attr('class', 'legend').attr('transform', 'translate(' + xLegend + ', ' + yLegend + ')');
-		/* definition couleurs - 10 categories de couleurs differentes */
+
+		/** COLOR MANAGEMENT **/
+		/* color definition - 10 categories */
 		var color = d3.scale.category10();
+		var colorTab = color;
+		var d3Color10Items=[
+			d3.rgb("#1f77b4"),
+			d3.rgb("#ff7f0e"),
+			d3.rgb("#2ca02c"),
+			d3.rgb("#d62728"),
+			d3.rgb("#9467bd"),
+			d3.rgb("#8c564b"),
+			d3.rgb("#e377c2"),
+			d3.rgb("#7f7f7f"),
+			d3.rgb("#bcbd22"),
+			d3.rgb("#17becf")
+		];
+		if(colorShift)
+			colorTab = d3Color10Items.concat(d3Color10Items.splice(0,colorShift));
+		
 		/* default graphical binding for chart axis */
 		// x = d3.scale.linear().range([0, w]);
 		if (that.relTime) {
@@ -163,13 +182,19 @@
 			color.domain(d3.keys(model).filter(function (name) {
 				return name !== 'time';
 			}));
+
+
+			var sensors = d3.keys(model).filter(function (name) {
+				return name !== 'time';
+			})
 			/* renvoie nom, values */
-			var sensorData = color.domain().map(function (name) {
+			var sensorData = sensors.map(function (name, index) {
 				return {
 					name: name,
 					label: model[name].label,
 					unit: model[name].unit,
 					trange: trange,
+					color: colorTab[index],
 					//d3.extent(model[name].time),
 					values: model[name].vals.map(function (d, i) {
 						return {
@@ -215,10 +240,10 @@
 			sensorLegend.exit().remove();
 			var gSensorLegend = sensorLegend.enter().append('g').attr('class', 'sensorLegend');
 			gSensorLegend.append('text').attr('class', 'sensorName').attr('dy', '.35em').style('fill', function (d) {
-				return color(d.name);
+				return d.color;
 			});
 			gSensorLegend.append('text').attr('class', 'sensorValue').attr('dy', '.35em').style('fill', function (d) {
-				return color(d.name);
+				return d.color;
 			});
 			svg.selectAll('.sensorLegend').select('.sensorName').datum(function (d) {
 				return {
@@ -272,7 +297,7 @@
 				/* update scale */
 				return that.line(d.values);
 			}).style('stroke', function (d) {
-				return color(d.name);
+				return d.color;
 			}).style('fill', 'none');
 		};
 		/* define color according to colormap (10) */
@@ -320,6 +345,11 @@
 			  type: Number,
 			  value: 640,
 			  notify: true
+		  },
+		  color: {
+			  type: Number,
+			  value: 0,
+			  notify: true
 		  }
 	  },
 	  ready: function () {
@@ -343,8 +373,9 @@
 		  };
 		  this.relTime = this.relTime || false;
 		  //console.log("xRev: "+this.relTime);
+
 		  /* create/init d3 chart */
-		  this.chart = linesChart(this.$.chart, this.width, this.height, this.relTime);
+		  this.chart = linesChart(this.$.chart, this.width, this.height, this.relTime, this.color);
 	  },
 	  selectorChanged: function () {
 		  // autorefresh?
@@ -426,6 +457,9 @@
 	  },
 	  _computeViewBox: function (height, width) {
 		  return '0 0 ' + width + ' ' + height;
+	  },
+	  _computeStyle: function (height, width) {
+		  return "width: "+width+"px; height: " + height+"px;";
 	  }
   });
 </script>
